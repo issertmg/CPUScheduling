@@ -1,7 +1,13 @@
 #include <stdio.h>
 
+typedef struct Process {
+  int pID;
+  int arrivalTime;
+  int totalExecutionTime;
+} process;
+
 int main(void) {
-  printf("Hello World\n");
+  process p[100];
   
   return 0;
 } 
