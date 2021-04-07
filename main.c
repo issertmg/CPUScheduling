@@ -47,15 +47,21 @@ int main(void) {
 void simulateNSJF() {
   sortProcessesByArrivalTime();
 
-  int i, j;
+  int i, index;
   int currentTime = 0;
   for (i = 0; i < n; i++) {
-    int index = getIndexOfShortestProcess(currentTime);
+    
+    do {
+      index = getIndexOfShortestProcess(currentTime);
+      if (index == -1)
+        currentTime++;
+    } while (index == -1);
+
     o[i].pID = p[index].pID;
     o[i].startEndLength = 1;
     o[i].startTime[0] = currentTime;
     o[i].endTime[0] = currentTime + p[index].totalExecutionTime;
-    o[i].waitingTime = o[i].startTime[0];
+    o[i].waitingTime = o[i].startTime[0] - p[index].arrivalTime;
     o[i].turnaroundTime = o[i].waitingTime + p[index].totalExecutionTime;
 
     currentTime += p[index].totalExecutionTime;
@@ -65,7 +71,7 @@ void simulateNSJF() {
 
 int getIndexOfShortestProcess(int currentTime) {
   int shortestExecutionTime = INT_MAX;
-  int index;
+  int index = -1;
   int i;
   for (i = 0; i < n; i++) {
     if (p[i].arrivalTime > currentTime) {
