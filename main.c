@@ -35,17 +35,20 @@ int n;
 int main(void) {
   
   //SAMPLE DATA FOR TESTING
-  n = 4; 
+  /* n = 4; 
   p[0].pID = 1; p[0].arrivalTime = 0; p[0].totalExecutionTime = 8; 
   p[1].pID = 2; p[1].arrivalTime = 1; p[1].totalExecutionTime = 4; 
   p[2].pID = 3; p[2].arrivalTime = 2; p[2].totalExecutionTime = 9;
-  p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5;
-
+  p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5; */
+  n = 3; 
+  p[0].pID = 1; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
+  p[1].pID = 2; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
+  p[2].pID = 3; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
   //initialize other attributes of processes
   int i;
   for (i = 0; i < n; i++) {
     p[i].executionTimeLeft = p[i].totalExecutionTime;
-    p[i].startEndLength = 0;
+    p[i].startEndLength = 1; // FIXME:
   }
 
 
@@ -58,6 +61,25 @@ int main(void) {
   
 }
 
+void simulateFCFS () {
+  int i;
+
+  sortProcessesByArrivalTime();
+  
+  // first process
+  p[0].startTime[0] = p[0].arrivalTime;
+  p[0].endTime[0] = p[0].arrivalTime + p[0].totalExecutionTime;
+  p[0].turnaroundTime = p[0].endTime - p[0].arrivalTime;
+  p[0].waitingTime = p[0].turnaroundTime - p[0].totalExecutionTime;
+
+  // calculate waiting time
+  for (i = 1; i < n; i++) {
+    p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
+    p[i].turnaroundTime = p[i].endTime[0] - p[i].totalExecutionTime;
+    p[i].waitingTime = p[i].turnaroundTime - p[i-1].totalExecutionTime;
+  }
+
+}
 void simulatePSJF() {
   sortProcessesByArrivalTime();
 
