@@ -76,7 +76,7 @@ void simulatePSJF() {
         currentTime++;
     } while (i == -1);
     
-    printf("\t %d \n", i);
+    
     p[i].startTime[p[i].startEndLength] = currentTime;
 
     /* 
@@ -165,8 +165,8 @@ void sortProcessesByArrivalTime() {
 
   for (i = 0; i < n-1; i++) {
     for (j = 0; j < n-i-1; j++) {
-      if ( (p[j].totalExecutionTime > p[j+1].totalExecutionTime) ||
-           ((p[j].totalExecutionTime == p[j+1].totalExecutionTime) &&
+      if ( (p[j].arrivalTime > p[j+1].arrivalTime) ||
+           ((p[j].arrivalTime == p[j+1].arrivalTime) &&
             (p[j].arrivalTime > p[j+1].arrivalTime)) ) {
         process temp = p[j];
         p[j] = p[j+1];
