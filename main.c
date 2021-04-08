@@ -41,10 +41,18 @@ int main(void) {
   p[1].pID = 2; p[1].arrivalTime = 1; p[1].totalExecutionTime = 4; 
   p[2].pID = 3; p[2].arrivalTime = 2; p[2].totalExecutionTime = 9;
   p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5; */
+
   n = 3; 
   p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
   p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
   p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
+
+  /* n = 5; 
+  p[0].pID = 1; p[0].arrivalTime = 4; p[0].totalExecutionTime = 5; 
+  p[1].pID = 2; p[1].arrivalTime = 6; p[1].totalExecutionTime = 4; 
+  p[2].pID = 3; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
+  p[3].pID = 4; p[3].arrivalTime = 6; p[3].totalExecutionTime = 2; 
+  p[4].pID = 5; p[4].arrivalTime = 5; p[4].totalExecutionTime = 4; */
   //initialize other attributes of processes
   int i;
   for (i = 0; i < n; i++) {
@@ -74,19 +82,22 @@ void simulateFCFS () {
   
   sortProcessesByArrivalTime();
   
-  // first process
-  p[0].startTime[0] = p[0].arrivalTime;
-  p[0].endTime[0] = p[0].arrivalTime + p[0].totalExecutionTime;
-  p[0].turnaroundTime = p[0].endTime[0] - p[0].arrivalTime;
-  p[0].waitingTime = p[0].turnaroundTime - p[0].totalExecutionTime;
+  
 
   // calculate waiting time
-  for (int i = 1; i < n; i++) {
-    p[i].startTime[0] = max(p[i].arrivalTime, p[i-1].endTime[0]);
-    p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
-    p[i].turnaroundTime = p[i].endTime[0] - p[i].totalExecutionTime;
-    p[i].waitingTime = p[i].turnaroundTime - p[i-1].totalExecutionTime;
-
+  for (int i = 0; i < n; i++) {
+    if (i == 0) {
+      // first process
+      p[i].startTime[0] = p[i].arrivalTime;
+      p[i].endTime[0] = p[i].arrivalTime + p[i].totalExecutionTime;
+      p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime;
+      p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
+    } else {
+      p[i].startTime[0] = max(p[i].arrivalTime, p[i-1].endTime[0]);
+      p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
+      p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime;
+      p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
+    }
   }
 
 }
