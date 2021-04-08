@@ -79,8 +79,8 @@ int main(void) {
   displayProcesses();
   //simulateNSJF();
   //simulatePSJF();
-  //simulateFCFS();
-  simulateRR();
+  simulateFCFS();
+  //simulateRR();
   displayOutput();
   
   return 0;
