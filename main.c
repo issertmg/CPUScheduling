@@ -42,9 +42,9 @@ int main(void) {
   p[2].pID = 3; p[2].arrivalTime = 2; p[2].totalExecutionTime = 9;
   p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5; */
   n = 3; 
-  p[0].pID = 1; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
-  p[1].pID = 2; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
-  p[2].pID = 3; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
+  p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
+  p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
+  p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
   //initialize other attributes of processes
   int i;
   for (i = 0; i < n; i++) {
