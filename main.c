@@ -18,6 +18,16 @@ typedef struct Process {
   int turnaroundTime;
 } process;
 
+typedef struct Node {
+  process *p;
+  struct Node *next;
+} node;
+
+typedef struct Queue {
+  node *front;
+  node *rear;
+  int n;
+} queue;
 
 //function prototypes
 void displayOutput();
@@ -28,10 +38,20 @@ void simulateNSJF();
 void simulatePSJF();
 void simulateFCFS();
 int areAllProcessesDone();
+void simulateRR();
+
+//queue related function prototypes
+queue* createQueue();
+node* createNode(process* p1);
+void enqueue(queue* q, process* p1);
+node* dequeue(queue* q);
+int isEmptyQueue(queue* q);
+int areAllQueuedProcessesDone(queue* q);
 
 //global variables
 process p[100];
 int n;
+int quantum;
 
 int main(void) {
   
@@ -45,6 +65,9 @@ int main(void) {
   p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
   p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
   p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
+  
+  //for RR testing
+  quantum = 4;
   //initialize other attributes of processes
   int i;
   for (i = 0; i < n; i++) {
@@ -56,7 +79,8 @@ int main(void) {
   displayProcesses();
   //simulateNSJF();
   //simulatePSJF();
-  simulateFCFS();
+  //simulateFCFS();
+  simulateRR();
   displayOutput();
   
   return 0;
@@ -229,4 +253,112 @@ void displayOutput() {
   }
 
   printf("Average waiting time: %lf \n", totalWaitingTime/n);
+}
+
+queue* createQueue() {
+  queue* q = (queue*) malloc(sizeof(queue));
+  q->front = NULL;
+  q->rear = NULL;
+  return q;
+}
+
+node* createNode(process *p1) {
+  node* qNode = (node*) malloc(sizeof(node));
+  qNode->p = p1;
+  qNode->next = NULL;
+  return qNode;
+}
+
+void enqueue(queue* q, process *p1) {
+  node* qNode = createNode(p1);
+
+  if (isEmptyQueue(q)) {
+    q->front = qNode;
+    q->rear = qNode;
+  }
+
+  q->rear->next = qNode;
+  q->rear = qNode;
+}
+
+node* dequeue(queue* q) {
+  if (q->front == NULL)
+    return NULL;
+  
+  node* qNode = q->front;
+  
+  q->front = q->front->next;
+
+  if (q->front == NULL)
+    q->rear = NULL;
+
+  return qNode;
+}
+
+int isEmptyQueue(queue* q) {
+  return q->rear == NULL;
+}
+
+void simulateRR() {
+  sortProcessesByArrivalTime();
+
+  queue* q = createQueue();
+  int i;
+  for (i = 0; i < n; i++)
+    enqueue(q, &p[i]);
+
+  int currentTime = 0;
+  while (!areAllQueuedProcessesDone(q)) {
+    node* qNode = dequeue(q);
+
+    L1:
+    if (qNode->p->arrivalTime <= currentTime) {
+      if (qNode->p->executionTimeLeft != 0) {
+        if (qNode->p->executionTimeLeft > quantum) {
+          qNode->p->executionTimeLeft -= quantum;
+
+          qNode->p->startTime[qNode->p->startEndLength] = currentTime;
+          currentTime += quantum;
+          qNode->p->endTime[qNode->p->startEndLength] = currentTime;
+          qNode->p->startEndLength++;
+        }
+        else {
+          qNode->p->startTime[qNode->p->startEndLength] = currentTime;
+          currentTime += qNode->p->executionTimeLeft;
+          qNode->p->executionTimeLeft = 0;
+          qNode->p->endTime[qNode->p->startEndLength] = currentTime;
+          qNode->p->startEndLength++;
+        }
+      }
+    }
+    else {
+      currentTime = qNode->p->arrivalTime;
+      goto L1;
+    }
+    
+    enqueue(q, qNode->p);
+    free(qNode);
+  }
+
+  //fill up waitingTime and turnaroundTime of processes
+  int j;
+  for (i = 0; i < n; i++) {
+    p[i].turnaroundTime = p[i].endTime[p[i].startEndLength-1] - p[i].arrivalTime;
+    p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
+  }
+  
+}
+
+int areAllQueuedProcessesDone(queue* q) {
+  int i, flag = 1;
+
+  for (i = 0; i < n; i++) {
+    node* qNode = dequeue(q);
+    if (qNode->p->executionTimeLeft != 0) {
+      flag = 0;
+    }
+    enqueue(q, qNode->p);
+    free(qNode);
+  }
+  return flag;
 }
