@@ -26,6 +26,7 @@ void sortProcessesByArrivalTime();
 int getIndexOfShortestProcess(int currentTime);
 void simulateNSJF();
 void simulatePSJF();
+void simulateFCFS();
 int areAllProcessesDone();
 
 //global variables
@@ -76,7 +77,7 @@ void simulateFCFS () {
   // first process
   p[0].startTime[0] = p[0].arrivalTime;
   p[0].endTime[0] = p[0].arrivalTime + p[0].totalExecutionTime;
-  p[0].turnaroundTime = p[0].endTime - p[0].arrivalTime;
+  p[0].turnaroundTime = p[0].endTime[0] - p[0].arrivalTime;
   p[0].waitingTime = p[0].turnaroundTime - p[0].totalExecutionTime;
 
   // calculate waiting time
