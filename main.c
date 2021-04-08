@@ -97,15 +97,8 @@ void simulatePSJF() {
   //fill up waitingTime and turnaroundTime of processes
   int i, j;
   for (i = 0; i < n; i++) {
-    //initial waiting time (from arrival time to first start time)
-    int waitingTime = p[i].startTime[0] - p[i].arrivalTime;
-
-    for (j = 0; j < p[i].startEndLength-1; j++) {
-      //add waiting time (from endTime to next startTime)
-      waitingTime += (p[i].startTime[j+1] - p[i].endTime[j]);
-    }
-    p[i].waitingTime = waitingTime;
-    p[i].turnaroundTime = p[i].waitingTime + p[i].totalExecutionTime;
+    p[i].turnaroundTime = p[i].endTime[p[i].startEndLength-1] - p[i].arrivalTime;
+    p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
   }
 
 }
