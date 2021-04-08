@@ -2,20 +2,21 @@
 #include <stdlib.h>
 
 typedef struct Process {
+  /* input*/
   int pID;
   int arrivalTime;
   int totalExecutionTime;
-  int executionTimeLeft;
-} process;
+  
+  int executionTimeLeft; //initialized to value of totalExecutionTime (time left of totalExecutionTime)
 
-typedef struct Output {
-  int pID;
-  int startEndLength;
+  /* output */
+  int startEndLength; //initialized to 0 (length of startTime and endTime array)
   int startTime[500];
   int endTime[500];
   int waitingTime;
   int turnaroundTime;
-} output;
+} process;
+
 
 //function prototypes
 void displayOutput();
@@ -23,25 +24,92 @@ void displayProcesses();
 void sortProcessesByArrivalTime();
 int getIndexOfShortestProcess(int currentTime);
 void simulateNSJF();
+void simulatePSJF();
+int areAllProcessesDone();
 
 //global variables
 process p[100];
-output o[100];
 int n;
 
 int main(void) {
   
   //SAMPLE DATA FOR TESTING
   n = 3; 
-  p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; p[0].executionTimeLeft = p[0].totalExecutionTime;
-  p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; p[1].executionTimeLeft = p[1].totalExecutionTime;
-  p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3; p[2].executionTimeLeft = p[2].totalExecutionTime;
+  p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
+  p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
+  p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
+
+  n = 4; 
+  p[0].pID = 1; p[0].arrivalTime = 0; p[0].totalExecutionTime = 8; 
+  p[1].pID = 2; p[1].arrivalTime = 1; p[1].totalExecutionTime = 4; 
+  p[2].pID = 3; p[2].arrivalTime = 2; p[2].totalExecutionTime = 9;
+  p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5;
+
+  //initialize other attributes of processes
+  int i;
+  for (i = 0; i < n; i++) {
+    p[i].executionTimeLeft = p[i].totalExecutionTime;
+    p[i].startEndLength = 0;
+  }
+
 
   displayProcesses();
-  simulateNSJF();
+  //simulateNSJF();
+  simulatePSJF();
   displayOutput();
   
   return 0;
+}
+
+void simulatePSJF() {
+  sortProcessesByArrivalTime();
+
+  int i;
+  int currentTime = 0;
+
+  while (!areAllProcessesDone()) {
+
+    //get shortest process available at currentTime
+    do {
+      i = getIndexOfShortestProcess(currentTime);
+      if (i == -1)
+        currentTime++;
+    } while (i == -1);
+    
+    printf("\t %d \n", i);
+    p[i].startTime[p[i].startEndLength] = currentTime;
+
+    /* 
+      Increase time until finding another shorter process
+      or until current process is done
+    */
+    int j = i; //previous index
+    do {
+      i = getIndexOfShortestProcess(currentTime);
+      if (i == j) {
+        currentTime++;
+        p[i].executionTimeLeft--;
+      }
+    } while (i == j && !areAllProcessesDone());
+
+    //update endTime and length of startTime/endTime array of previous process
+    p[j].endTime[p[j].startEndLength] = currentTime;
+    p[j].startEndLength++;
+  }
+
+  //fill up waitingTime and turnaroundTime of processes
+
+}
+
+int areAllProcessesDone() {
+  int i, flag = 1;
+  for (i = 0; i < n; i++) {
+    if (p[i].executionTimeLeft != 0) {
+      flag = 0;
+      break;
+    }
+  }
+  return flag;
 }
 
 void simulateNSJF() {
@@ -57,12 +125,11 @@ void simulateNSJF() {
         currentTime++;
     } while (index == -1);
 
-    o[i].pID = p[index].pID;
-    o[i].startEndLength = 1;
-    o[i].startTime[0] = currentTime;
-    o[i].endTime[0] = currentTime + p[index].totalExecutionTime;
-    o[i].waitingTime = o[i].startTime[0] - p[index].arrivalTime;
-    o[i].turnaroundTime = o[i].waitingTime + p[index].totalExecutionTime;
+    p[index].startEndLength = 1;
+    p[index].startTime[0] = currentTime;
+    p[index].endTime[0] = currentTime + p[index].totalExecutionTime;
+    p[index].waitingTime = p[index].startTime[0] - p[index].arrivalTime;
+    p[index].turnaroundTime = p[index].waitingTime + p[index].totalExecutionTime;
 
     currentTime += p[index].totalExecutionTime;
     p[index].executionTimeLeft = 0;
@@ -115,18 +182,17 @@ void displayOutput() {
   int i, j;
   
   for (i = 0; i < n; i++) {
-    printf("P[%d] \n", o[i].pID);
+    printf("P[%d] \n", p[i].pID);
 
-    for (j = 0; j < o[i].startEndLength; j++) {
-      printf("Start time: %d \t End time: %d \n", o[i].startTime[j], o[i].endTime[j]);
+    for (j = 0; j < p[i].startEndLength; j++) {
+      printf("Start time: %d \t End time: %d \n", p[i].startTime[j], p[i].endTime[j]);
     }
 
-    printf("Waiting time: %d \n", o[i].waitingTime);
-    printf("Turnaround time: %d \n", o[i].turnaroundTime);
+    printf("Waiting time: %d \n", p[i].waitingTime);
+    printf("Turnaround time: %d \n", p[i].turnaroundTime);
     printf("**************************************** \n");
-    totalWaitingTime += o[i].waitingTime;
+    totalWaitingTime += p[i].waitingTime;
   }
 
   printf("Average waiting time: %lf \n", totalWaitingTime/n);
 }
-
