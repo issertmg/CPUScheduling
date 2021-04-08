@@ -60,6 +60,12 @@ int main(void) {
   return 0;
   
 }
+int max (int a, int b) {
+	if(a > b)
+		return a;
+	else
+		return b;		
+}
 
 void simulateFCFS () {
   int i;
@@ -74,9 +80,12 @@ void simulateFCFS () {
 
   // calculate waiting time
   for (i = 1; i < n; i++) {
+    p[i].startTime[0] = max(p[i].arrivalTime, p[i-1].endTime[0]);
+    
     p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
     p[i].turnaroundTime = p[i].endTime[0] - p[i].totalExecutionTime;
     p[i].waitingTime = p[i].turnaroundTime - p[i-1].totalExecutionTime;
+    
   }
 
 }
