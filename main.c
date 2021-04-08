@@ -62,17 +62,17 @@ int main(void) {
   p[2].pID = 3; p[2].arrivalTime = 2; p[2].totalExecutionTime = 9;
   p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5; */
 
-  n = 3; 
+  /* n = 3; 
   p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
   p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
-  p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
+  p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3; */
 
-  /* n = 5; 
+  n = 5; 
   p[0].pID = 1; p[0].arrivalTime = 4; p[0].totalExecutionTime = 5; 
   p[1].pID = 2; p[1].arrivalTime = 6; p[1].totalExecutionTime = 4; 
   p[2].pID = 3; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
   p[3].pID = 4; p[3].arrivalTime = 6; p[3].totalExecutionTime = 2; 
-  p[4].pID = 5; p[4].arrivalTime = 5; p[4].totalExecutionTime = 4; */
+  p[4].pID = 5; p[4].arrivalTime = 5; p[4].totalExecutionTime = 4;
   
   //for RR testing
   quantum = 4;
@@ -80,7 +80,7 @@ int main(void) {
   int i;
   for (i = 0; i < n; i++) {
     p[i].executionTimeLeft = p[i].totalExecutionTime;
-    p[i].startEndLength = 1; // FIXME:
+    p[i].startEndLength = 1; //todo:
   }
 
 
@@ -118,7 +118,9 @@ void simulateFCFS () {
       p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
     } else {
       p[i].startTime[0] = max(p[i].arrivalTime, p[i-1].endTime[0]);
-      p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
+      /* p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
+      p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime; */
+      p[i].endTime[0] = p[i].totalExecutionTime + p[i].startTime[0];
       p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime;
       p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
     }
