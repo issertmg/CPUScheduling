@@ -54,12 +54,14 @@ int main(void) {
 
   displayProcesses();
   //simulateNSJF();
-  simulatePSJF();
+  //simulatePSJF();
+  simulateFCFS();
   displayOutput();
   
   return 0;
   
 }
+
 int max (int a, int b) {
 	if(a > b)
 		return a;
@@ -68,8 +70,7 @@ int max (int a, int b) {
 }
 
 void simulateFCFS () {
-  int i;
-
+  
   sortProcessesByArrivalTime();
   
   // first process
@@ -79,13 +80,12 @@ void simulateFCFS () {
   p[0].waitingTime = p[0].turnaroundTime - p[0].totalExecutionTime;
 
   // calculate waiting time
-  for (i = 1; i < n; i++) {
+  for (int i = 1; i < n; i++) {
     p[i].startTime[0] = max(p[i].arrivalTime, p[i-1].endTime[0]);
-    
     p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
     p[i].turnaroundTime = p[i].endTime[0] - p[i].totalExecutionTime;
     p[i].waitingTime = p[i].turnaroundTime - p[i-1].totalExecutionTime;
-    
+
   }
 
 }
