@@ -19,44 +19,24 @@ typedef struct Process {
   int turnaroundTime;
 } process;
 
-typedef struct Node {
-  process *p;
-  struct Node *next;
-} node;
-
-typedef struct Queue {
-  node *front;
-  node *rear;
-  int n;
-} queue;
-
 //function prototypes
 void displayOutput();
 void displayProcesses();
 void sortProcessesByArrivalTime();
 int getIndexOfShortestProcess(int currentTime);
+int areAllProcessesDone();
 void simulateNSJF();
 void simulatePSJF();
 void simulateFCFS();
-int areAllProcessesDone();
 void simulateRR();
 void readTextFile();
 void initializeProcesses();
-
-//queue related function prototypes
-queue* createQueue();
-node* createNode(process* p1);
-void enqueue(queue* q, process* p1);
-node* dequeue(queue* q);
-int isEmptyQueue(queue* q);
-int areAllQueuedProcessesDone(queue* q);
 
 //global variables
 process p[100];
 int cpuSchedAlgo;
 int n;
 int quantum;
-
 
 int main(void) {
   
@@ -71,7 +51,6 @@ int main(void) {
   }
 
   displayOutput();
-  
   return 0;
 }
 
@@ -248,112 +227,48 @@ void displayOutput() {
   printf("Average waiting time: %0.1lf \n", totalWaitingTime/n);
 }
 
-queue* createQueue() {
-  queue* q = (queue*) malloc(sizeof(queue));
-  q->front = NULL;
-  q->rear = NULL;
-  return q;
-}
-
-node* createNode(process *p1) {
-  node* qNode = (node*) malloc(sizeof(node));
-  qNode->p = p1;
-  qNode->next = NULL;
-  return qNode;
-}
-
-void enqueue(queue* q, process *p1) {
-  node* qNode = createNode(p1);
-
-  if (isEmptyQueue(q)) {
-    q->front = qNode;
-    q->rear = qNode;
-  }
-
-  q->rear->next = qNode;
-  q->rear = qNode;
-}
-
-node* dequeue(queue* q) {
-  if (q->front == NULL)
-    return NULL;
-  
-  node* qNode = q->front;
-  
-  q->front = q->front->next;
-
-  if (q->front == NULL)
-    q->rear = NULL;
-
-  return qNode;
-}
-
-int isEmptyQueue(queue* q) {
-  return q->rear == NULL;
-}
-
 void simulateRR() {
   sortProcessesByArrivalTime();
 
-  queue* q = createQueue();
-  int i;
-  for (i = 0; i < n; i++)
-    enqueue(q, &p[i]);
-
   int currentTime = 0;
-  while (!areAllQueuedProcessesDone(q)) {
-    node* qNode = dequeue(q);
+  while (!areAllProcessesDone()) {
 
-    L1:
-    if (qNode->p->arrivalTime <= currentTime) {
-      if (qNode->p->executionTimeLeft != 0) {
-        if (qNode->p->executionTimeLeft > quantum) {
-          qNode->p->executionTimeLeft -= quantum;
+    int i;
+    for (i = 0; i < n; i++) {
+      L1:
+          if (p[i].arrivalTime <= currentTime) {
+            if (p[i].executionTimeLeft != 0) {
+              if (p[i].executionTimeLeft > quantum) {
+                p[i].executionTimeLeft -= quantum;
 
-          qNode->p->startTime[qNode->p->startEndLength] = currentTime;
-          currentTime += quantum;
-          qNode->p->endTime[qNode->p->startEndLength] = currentTime;
-          qNode->p->startEndLength++;
-        }
-        else {
-          qNode->p->startTime[qNode->p->startEndLength] = currentTime;
-          currentTime += qNode->p->executionTimeLeft;
-          qNode->p->executionTimeLeft = 0;
-          qNode->p->endTime[qNode->p->startEndLength] = currentTime;
-          qNode->p->startEndLength++;
-        }
-      }
+               p[i].startTime[p[i].startEndLength] = currentTime;
+                currentTime += quantum;
+                p[i].endTime[p[i].startEndLength] = currentTime;
+                p[i].startEndLength++;
+              }
+              else {
+                p[i].startTime[p[i].startEndLength] = currentTime;
+                currentTime += p[i].executionTimeLeft;
+                p[i].executionTimeLeft = 0;
+                p[i].endTime[p[i].startEndLength] = currentTime;
+                p[i].startEndLength++;
+              }
+            }
+          }
+          else {
+            currentTime = p[i].arrivalTime;
+            goto L1;
+          }
     }
-    else {
-      currentTime = qNode->p->arrivalTime;
-      goto L1;
-    }
-    
-    enqueue(q, qNode->p);
-    free(qNode);
   }
 
   //fill up waitingTime and turnaroundTime of processes
-  int j;
+  int i, j;
   for (i = 0; i < n; i++) {
     p[i].turnaroundTime = p[i].endTime[p[i].startEndLength-1] - p[i].arrivalTime;
     p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
   }
   
-}
-
-int areAllQueuedProcessesDone(queue* q) {
-  int i, flag = 1;
-
-  for (i = 0; i < n; i++) {
-    node* qNode = dequeue(q);
-    if (qNode->p->executionTimeLeft != 0) {
-      flag = 0;
-    }
-    enqueue(q, qNode->p);
-    free(qNode);
-  }
-  return flag;
 }
 
 void readTextFile() {
