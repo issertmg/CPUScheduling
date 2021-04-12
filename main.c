@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <unistd.h>
 
 typedef struct Process {
   /* input*/
@@ -39,6 +40,8 @@ void simulatePSJF();
 void simulateFCFS();
 int areAllProcessesDone();
 void simulateRR();
+void readTextFile();
+void initializeProcesses();
 
 //queue related function prototypes
 queue* createQueue();
@@ -50,49 +53,26 @@ int areAllQueuedProcessesDone(queue* q);
 
 //global variables
 process p[100];
+int cpuSchedAlgo;
 int n;
 int quantum;
 
+
 int main(void) {
   
-  //SAMPLE DATA FOR TESTING
-  /* n = 4; 
-  p[0].pID = 1; p[0].arrivalTime = 0; p[0].totalExecutionTime = 8; 
-  p[1].pID = 2; p[1].arrivalTime = 1; p[1].totalExecutionTime = 4; 
-  p[2].pID = 3; p[2].arrivalTime = 2; p[2].totalExecutionTime = 9;
-  p[3].pID = 4; p[3].arrivalTime = 3; p[3].totalExecutionTime = 5; */
+  readTextFile();
+  initializeProcesses();
 
-  /* n = 3; 
-  p[0].pID = 0; p[0].arrivalTime = 0; p[0].totalExecutionTime = 24; 
-  p[1].pID = 1; p[1].arrivalTime = 0; p[1].totalExecutionTime = 3; 
-  p[2].pID = 2; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3; */
-
-  n = 5; 
-  p[0].pID = 1; p[0].arrivalTime = 4; p[0].totalExecutionTime = 5; 
-  p[1].pID = 2; p[1].arrivalTime = 6; p[1].totalExecutionTime = 4; 
-  p[2].pID = 3; p[2].arrivalTime = 0; p[2].totalExecutionTime = 3;
-  p[3].pID = 4; p[3].arrivalTime = 6; p[3].totalExecutionTime = 2; 
-  p[4].pID = 5; p[4].arrivalTime = 5; p[4].totalExecutionTime = 4;
-  
-  //for RR testing
-  quantum = 4;
-  //initialize other attributes of processes
-  int i;
-  for (i = 0; i < n; i++) {
-    p[i].executionTimeLeft = p[i].totalExecutionTime;
-    p[i].startEndLength = 1; //todo:
+  switch(cpuSchedAlgo) {
+    case 0: simulateFCFS(); break;
+    case 1: simulateNSJF(); break;
+    case 2: simulatePSJF(); break;
+    case 3: simulateRR(); break;
   }
 
-
-  displayProcesses();
-  //simulateNSJF();
-  //simulatePSJF();
-  simulateFCFS();
-  //simulateRR();
   displayOutput();
   
   return 0;
-  
 }
 
 int max (int a, int b) {
@@ -106,14 +86,13 @@ void simulateFCFS () {
   
   sortProcessesByArrivalTime();
   
-  
-
   // calculate waiting time
   for (int i = 0; i < n; i++) {
     if (i == 0) {
       // first process
       p[i].startTime[0] = p[i].arrivalTime;
       p[i].endTime[0] = p[i].arrivalTime + p[i].totalExecutionTime;
+      p[i].startEndLength++;
       p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime;
       p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
     } else {
@@ -121,6 +100,7 @@ void simulateFCFS () {
       /* p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
       p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime; */
       p[i].endTime[0] = p[i].totalExecutionTime + p[i].startTime[0];
+      p[i].startEndLength++;
       p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime;
       p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
     }
@@ -265,7 +245,7 @@ void displayOutput() {
     totalWaitingTime += p[i].waitingTime;
   }
 
-  printf("Average waiting time: %lf \n", totalWaitingTime/n);
+  printf("Average waiting time: %0.1lf \n", totalWaitingTime/n);
 }
 
 queue* createQueue() {
@@ -374,4 +354,46 @@ int areAllQueuedProcessesDone(queue* q) {
     free(qNode);
   }
   return flag;
+}
+
+void readTextFile() {
+  FILE *fp;
+  int i;
+  char completefilepath[301];
+  char filename[101];
+
+  if (getcwd(completefilepath, sizeof(completefilepath)) == NULL) {
+    perror("Error getting current working dir.");
+    exit(1);
+  }
+
+  printf("Enter filename (include .txt): ");
+  scanf("%s", filename);
+  strcat(completefilepath, "\\");
+  strcat(completefilepath, filename);
+  printf("File path: %s\n", completefilepath);
+
+  fp = fopen (completefilepath, "r");
+
+  if (fp != NULL) {
+    if (fscanf(fp, " %d %d %d", &cpuSchedAlgo, &n, &quantum) == 3) {
+      for (int i = 0; i < n; i++) {
+        fscanf(fp, " %d %d %d", &p[i].pID, &p[i].arrivalTime, &p[i].totalExecutionTime);
+      }
+    }
+  }
+  else {
+    printf("Error opening text file.");
+    exit(1);
+  }
+
+  fclose(fp);
+}
+
+void initializeProcesses() {
+  int i;
+  for (i = 0; i < n; i++) {
+    p[i].executionTimeLeft = p[i].totalExecutionTime;
+    p[i].startEndLength = 0;
+  }
 }
