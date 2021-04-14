@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <unistd.h>
+#include <string.h>
+#include <ctype.h>
 
 typedef struct Process {
   /* input*/
@@ -33,6 +35,7 @@ void readTextFile();
 void initializeProcesses();
 int isInteger(float value);
 void errorCheckInputs (float X, float Y, float Z, float A[], float B[], float C[], int processLines);
+int isStringDigitsOnly(const char *str);
 
 //global variables
 process p[100];
@@ -289,6 +292,30 @@ void readTextFile() {
   fp = fopen (filepath, "r");
 
   if (fp != NULL) {
+    //check if text file contains non-numeric data
+    char line[256];
+    char *token;
+
+    while(fgets(line, 256, fp)) {
+      token = strtok(line, " ");
+      int tokenCounterPerLine = 0;
+
+      while(token != NULL) {
+        if (!isStringDigitsOnly(token)) {
+          printf("Error: Text file contains non-numeric data.");
+          exit(1);
+        }
+        tokenCounterPerLine++;
+        token = strtok(NULL, " ");
+      }
+      if (tokenCounterPerLine != 3) {
+        printf("Error: Each line in the text file should have exactly 3 integers.");
+        exit(1);
+      }
+    }
+
+    fseek(fp, 0, SEEK_SET);
+
     if (fscanf(fp, " %f %f %f", &X, &Y, &Z) == 3) {
       processLineCounter = 0;
       while (fscanf(fp, " %f %f %f", &A[processLineCounter], &B[processLineCounter], &C[processLineCounter]) == 3) {
@@ -384,4 +411,14 @@ void initializeProcesses() {
     p[i].executionTimeLeft = p[i].totalExecutionTime;
     p[i].startEndLength = 0;
   }
+}
+
+int isStringDigitsOnly(const char *str) {
+  while (*str) {
+    if (*str != '\n' && isdigit(*str++) == 0) 
+      return 0;
+
+    *str++;
+  }
+  return 1;
 }
