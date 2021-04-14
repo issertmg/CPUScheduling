@@ -76,8 +76,6 @@ void simulateFCFS () {
       p[i].waitingTime = p[i].turnaroundTime - p[i].totalExecutionTime;
     } else {
       p[i].startTime[0] = max(p[i].arrivalTime, p[i-1].endTime[0]);
-      /* p[i].endTime[0] = p[i].totalExecutionTime + p[i-1].endTime[0];
-      p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime; */
       p[i].endTime[0] = p[i].totalExecutionTime + p[i].startTime[0];
       p[i].startEndLength++;
       p[i].turnaroundTime = p[i].endTime[0] - p[i].arrivalTime;
@@ -284,7 +282,7 @@ void readTextFile() {
 
   printf("Enter filename (include .txt): ");
   scanf("%s", filename);
-  strcat(completefilepath, "\\");
+  strcat(completefilepath, "/");
   strcat(completefilepath, filename);
   printf("File path: %s\n", completefilepath);
 
