@@ -343,7 +343,7 @@ void errorCheckInputs (float X, float Y, float Z, float A[], float B[], float C[
 
   //Error checking: if not RR algo, then Z should be 1.
   if (X != 3 && Z != 1) {
-    printf("Error: CPU scheduling algorithm (X) is Round Robin. Time slice (Z) value should be 1.");
+    printf("Error: CPU scheduling algorithm (X) is not Round Robin. Time slice (Z) value should be 1.");
     exit(1);
   }
 
