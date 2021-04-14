@@ -31,6 +31,8 @@ void simulateFCFS();
 void simulateRR();
 void readTextFile();
 void initializeProcesses();
+int isInteger(float value);
+void errorCheckInputs (float X, float Y, float Z, float A[], float B[], float C[], int processLines);
 
 //global variables
 process p[100];
@@ -271,36 +273,109 @@ void simulateRR() {
 
 void readTextFile() {
   FILE *fp;
-  int i;
-  char completefilepath[301];
-  char filename[101];
+  int processLineCounter;
+  char filepath[261] = "./";
+  char filename[261];
 
-  if (getcwd(completefilepath, sizeof(completefilepath)) == NULL) {
-    perror("Error getting current working dir.");
-    exit(1);
-  }
+  //Variables used for checking whether input are all integers
+  float X, Y, Z;
+  float A[100], B[100], C[100];
 
   printf("Enter filename (include .txt): ");
   scanf("%s", filename);
-  strcat(completefilepath, "/");
-  strcat(completefilepath, filename);
-  printf("File path: %s\n", completefilepath);
 
-  fp = fopen (completefilepath, "r");
+  strcat(filepath, filename);
+
+  fp = fopen (filepath, "r");
 
   if (fp != NULL) {
-    if (fscanf(fp, " %d %d %d", &cpuSchedAlgo, &n, &quantum) == 3) {
-      for (int i = 0; i < n; i++) {
-        fscanf(fp, " %d %d %d", &p[i].pID, &p[i].arrivalTime, &p[i].totalExecutionTime);
+    if (fscanf(fp, " %f %f %f", &X, &Y, &Z) == 3) {
+      processLineCounter = 0;
+      while (fscanf(fp, " %f %f %f", &A[processLineCounter], &B[processLineCounter], &C[processLineCounter]) == 3) {
+        processLineCounter++;
       }
+    }
+    else {
+      printf("Error: Problem reading first line of text file. Make sure it contains 3 integers.");
+      exit(1);
     }
   }
   else {
-    printf("Error opening text file.");
+    printf("Error opening text file. Make sure filename (with file extension) is correct.");
     exit(1);
   }
 
   fclose(fp);
+
+  errorCheckInputs(X, Y, Z, A, B, C, processLineCounter);
+
+  //Place read values to global variables after checking for errors.
+  cpuSchedAlgo = X;
+  n = Y;
+  quantum = Z;
+
+  int i;
+  for (i = 0; i < n; i++) {
+    p[i].pID = (int) A[i];
+    p[i].arrivalTime = (int) B[i];
+    p[i].totalExecutionTime = (int) C[i];
+  }
+}
+
+void errorCheckInputs (float X, float Y, float Z, float A[], float B[], float C[], int processLines) {
+  //constraint: X should be 0 to 3.
+  if (X < 0 || X > 3) {
+    printf("Error: Specified CPU scheduling algorithm (X) is invalid. Must be a value from 0 to 3.");
+    exit(1);
+  }
+
+  //constraint: Y should be from 3 to 100.
+  if (Y < 3 || Y > 100) {
+    printf("Error: Number of processes (Y) should be from 3 to 100.");
+    exit(1);
+  }
+
+  //constraint: Z should be from 1 to 100.
+  if (Z < 1 || Z > 100) {
+    printf("Error: Time slice (Z) should be from 1 to 100.");
+    exit(1);
+  }
+
+  //Error checking: if not RR algo, then Z should be 1.
+  if (X != 3 && Z != 1) {
+    printf("Error: CPU scheduling algorithm (X) is Round Robin. Time slice (Z) value should be 1.");
+    exit(1);
+  }
+
+  //Error checking for number of processes read from file
+  if (processLines < Y) {
+    printf("Error: Lines of processes is less than the indicated number of processes.");
+    exit(1);
+  }
+  else if (processLines > Y) {
+    printf("Error: Lines of processes is greater than the indicated number of processes.");
+    exit(1);
+  }
+
+  //Check if all inputs are integers
+  if (!isInteger(X) || !isInteger(Y) || !isInteger(Z)) {
+    printf("Error: First line containing X, Y, and Z should be integers.");
+    exit(1);
+  }
+
+  int i;
+  for (i = 0; i < Y; i++) {
+    if (!isInteger(A[i]) || !isInteger(B[i]) || !isInteger(C[i])) {
+      printf("Error: All process ID, arrival time, and total execution time should be integers.");
+      exit(1);
+    }
+  }
+}
+
+int isInteger(float value) {
+    int truncated = (int) value;
+    float integerValue = (float) truncated;
+    return (value == truncated);
 }
 
 void initializeProcesses() {
