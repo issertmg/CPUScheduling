@@ -302,7 +302,7 @@ void readTextFile() {
 
       while(token != NULL) {
         if (!isStringDigitsOnly(token)) {
-          printf("Error: Text file contains non-numeric data.");
+          printf("Error: Text file contains non-numeric data and/or invalid values.");
           exit(1);
         }
         tokenCounterPerLine++;
@@ -328,7 +328,7 @@ void readTextFile() {
     }
   }
   else {
-    printf("Error opening text file. Make sure filename (with file extension) is correct.");
+    printf("\"%s\" not found.", filename);
     exit(1);
   }
 
