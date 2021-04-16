@@ -422,7 +422,7 @@ void initializeProcesses() {
 
 int isStringDigitsOnly(const char *str) {
   while (*str) {
-    if (*str != '\n' && isdigit(*str++) == 0) 
+    if (*str != '\n' && *str != ' ' && isdigit(*str++) == 0) 
       return 0;
 
     *str++;
