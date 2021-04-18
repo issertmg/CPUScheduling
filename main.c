@@ -39,6 +39,12 @@ typedef struct Queue {
   int n;
 } queue;
 
+typedef struct Cell {
+  int pID;
+  int endTime;
+  int startTime;
+} cell;
+
 //function prototypes
 void displayOutput();
 void displayProcesses();
@@ -54,6 +60,8 @@ void initializeProcesses();
 int isInteger(float value);
 void errorCheckInputs (float X, float Y, float Z, float A[], float B[], float C[], int processLines);
 int isStringDigitsOnly(const char *str);
+void displayGanttChart();
+void sortCellsByStartTime();
 
 //queue related function prototypes
 queue* createQueue();
@@ -70,7 +78,6 @@ int n;
 int quantum;
 
 int main(void) {
-  
   readTextFile();
   initializeProcesses();
 
@@ -82,6 +89,7 @@ int main(void) {
   }
 
   displayOutput();
+  displayGanttChart();
   return 0;
 }
 
@@ -506,4 +514,156 @@ void enqueueArrivingProcess(queue* q, int currentTime) {
     for (i = 0; i < n; i++)
       if (p[i].arrivalTime == currentTime)
         enqueue(q, &p[i]);
+}
+
+int countNumberOfDigits(int n) {
+  int count = 0;
+  if (n == 0)
+    count = 1;
+
+  while(n!=0) {  
+       n=n/10;  
+       count++;  
+  }
+  return count;
+}
+
+void displayGanttChart() {
+  int count = 0;
+  int i;
+  for (i = 0; i < n; i++) {
+    count += p[i].startEndLength;
+  }
+
+  cell* c = (cell*) malloc(count * sizeof(cell));
+
+  int j;
+  int k = 0;
+  for (i = 0; i < n; i++) {
+    for (j = 0; j < p[i].startEndLength; j++) {
+      c[k].pID = p[i].pID;
+      c[k].startTime = p[i].startTime[j];
+      c[k].endTime = p[i].endTime[j];
+      k++;
+    }
+  }
+
+  sortCellsByStartTime(c, count);
+  printf("\nGantt Chart: \n");
+  
+  //upper left egde
+  printf("%c", 201);
+
+  int previousEndTime = 0;
+  for (i = 0; i < count; i++) {
+
+    //for no process 
+    if(previousEndTime != c[i].startTime) {
+      //horizontal line
+      printf("%c%c%c%c%c", 205, 205, 205, 205, 205);
+      printf("%c", 203);
+    }
+
+    //horizontal line
+    printf("%c%c%c%c%c", 205, 205, 205, 205, 205);
+
+    //T or upper right edge
+    if (i == count-1) {
+      printf("%c \n", 187);
+    }
+    else {
+      printf("%c", 203);
+    }
+    previousEndTime = c[i].endTime;
+  }
+
+  previousEndTime = 0;
+  for (i = 0; i < count; i++) {
+
+    
+
+    //for no process 
+    if(previousEndTime != c[i].startTime) {
+      //horizontal line
+      printf("%c     ", 186);
+      
+    }
+
+    //horizontal spaces and process
+    printf("%c P%d", 186, c[i].pID);
+
+    for (j = 0; j < 3 - countNumberOfDigits(c[i].pID); j++) {
+      printf(" ");
+    }
+    previousEndTime = c[i].endTime;
+  }
+  printf("%c\n", 186);
+
+
+  //lower left egde
+  printf("%c", 200);
+
+  previousEndTime = 0;
+  for (i = 0; i < count; i++) {
+
+    //for no process 
+    if(previousEndTime != c[i].startTime) {
+      //horizontal line
+      printf("%c%c%c%c%c", 205, 205, 205, 205, 205);
+      printf("%c", 202);
+    }
+
+    //horizontal line
+    printf("%c%c%c%c%c", 205, 205, 205, 205, 205);
+
+    //T or lower right edge
+    if (i == count-1) {
+      printf("%c \n", 188);
+    }
+    else {
+      printf("%c", 202);
+    }
+    previousEndTime = c[i].endTime;
+  }
+
+  previousEndTime = 0;
+  for (i = 0; i < count; i++) {
+
+    //for no process at the start
+    if (i == 0 && previousEndTime != c[i].startTime) {
+      printf("0     ");
+    }
+
+    //for no process 
+    if(i != 0 && previousEndTime != c[i].startTime) {
+      printf("%d", c[i-1].endTime);
+
+      for (j = 0; j < 6 - countNumberOfDigits(c[i-1].endTime); j++)
+        printf(" ");
+    }
+
+    printf("%d", c[i].startTime);
+    for (j = 0; j < 6 - countNumberOfDigits(c[i].startTime); j++)
+      printf(" ");
+
+    previousEndTime = c[i].endTime;
+  }
+  
+  printf("%d\n", c[count-1].endTime);
+
+  printf("\n");
+}
+
+void sortCellsByStartTime(cell c[], int m) {
+  int i, j;
+
+  for (i = 0; i < m-1; i++) {
+    for (j = 0; j < m-i-1; j++) {
+      if (c[j].startTime > c[j+1].startTime) {
+        cell temp = c[j];
+        c[j] = c[j+1];
+        c[j+1] = temp;
+      }
+    }
+  }
 }
