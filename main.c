@@ -61,7 +61,8 @@ int isInteger(float value);
 void errorCheckInputs (float X, float Y, float Z, float A[], float B[], float C[], int processLines);
 int isStringDigitsOnly(const char *str);
 void displayGanttChart();
-void sortCellsByStartTime();
+void sortCellsByStartTime(cell c[], int m);
+int countNumberOfDigits(int n);
 
 //queue related function prototypes
 queue* createQueue();
